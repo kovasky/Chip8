@@ -67,4 +67,24 @@ bool Chip8::loadRom() const
 	return false;
 }
 
+void Chip8::run()
+{
+	while(1)
+	{
+		this->fetch();
 
+		this->decode();
+
+		this->execute();
+	}
+}
+
+void Chip8::fetch()
+{
+	this->opcode = this->memory[programCounter] << 0x08 | this->memory[programCounter + 0x01];
+}
+
+void Chip8::decode()
+{
+	
+}

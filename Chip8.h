@@ -4,6 +4,7 @@
 
 #include <cstdint> //for uint8
 #include <array>
+#include <string>
 
 using Register8 = uint8_t; //used to represent an 8-bit register
 using Register16 = uint16_t; //used to represent a 16-bit register
@@ -13,9 +14,17 @@ class Chip8
 public:
 	Chip8(std::string someRom);
 
+	void run();
+
 private:
 
 	bool loadRom() const;
+
+	void fetch();
+
+	void decode();
+	
+	void execute();
 
 	std::string romLocation;
 
