@@ -1,6 +1,7 @@
+#include <fstream>
 #include "Chip8.h"
 
-const	std::array<Register8,0x50> font = 
+const std::array<Register8,0x50> font = 
 { 
 	0xF0, 0x90, 0x90, 0x90, 0xF0, 
 	0x20, 0x60, 0x20, 0x20, 0x70,
@@ -20,22 +21,50 @@ const	std::array<Register8,0x50> font =
 	0xF0, 0x80, 0xF0, 0x80, 0x80 
 };
 
-Chip8::Chip8(std::string rom)
-	:fileName(rom),delayTimer(0x00),soundTimer(0x00),flag(0x00), opcode(0x00), index(0x00), stackPointer(0x00), operand(0x00),programCounter(0x02)
+Chip8::Chip8(std::string someRom)
+	:romLocation(someRom),delayTimer(0x00),soundTimer(0x00),flag(0x00), opcode(0x00), index(0x00), stackPointer(0x00), operand(0x00),programCounter(0x02)
 {
-	keyState.fill(0);
+	this->keyState.fill(0x00);
 
-	stack.fill(0);
+	this->generalPurposeRegisters.fill(0x00); //reset GPRs
 
-	generalPurposeRegisters.fill(0); //reset GPRs
+	this->displayMemory.fill(0x00);
 
-	displayMemory.fill(0);
+	this->memory.fill(0x00);
 
-	memory.fill(0);
+	this->stack.fill(0x00);
 
+	//copy default fontset
 	for(size_t i = 0; i < font.size(); i++)
 	{
 		memory[i] = font[i];
 	}
 
+	if(!this->loadRom())
+	{
+		exit(EXIT_FAILURE);
+	}
 }
+
+bool Chip8::loadRom() const 
+{
+	std::ifstream someRom(this->romLocation.c_str(), std::ios::binary);
+
+	if(someRom)
+	{
+		std::streamoff fileSize = someRom.tellg();
+
+		if(fileSize < 0x0E01)
+		{
+			someRom.read((char*)(this->memory.data()+0x0200),fileSize);
+
+			return true;
+		}
+
+
+	}
+
+	return false;
+}
+
+

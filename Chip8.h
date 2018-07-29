@@ -11,11 +11,13 @@ using Register16 = uint16_t; //used to represent a 16-bit register
 class Chip8
 {
 public:
-	Chip8(std::string rom);
+	Chip8(std::string someRom);
 
 private:
 
-	std::string fileName;
+	bool loadRom() const;
+
+	std::string romLocation;
 
 	Register8 delayTimer;
 
@@ -34,8 +36,6 @@ private:
 	Register16 programCounter;
 
 	std::array<Register8,0x10> keyState;
-	
-	std::array<Register16,0x10> stack;
 
 	std::array<Register8,0x10> generalPurposeRegisters;  //the Chip-8 has 16 General Purpose Registers
 
@@ -43,4 +43,6 @@ private:
 
 	std::array<Register8,0x1000> memory;
 		
+	std::array<Register16,0x10> stack;
+	
 };
