@@ -26,6 +26,8 @@ private:
 	
 	void execute();
 
+	void clearScreen();
+
 	std::string romLocation;
 
 	Register8 delayTimer;

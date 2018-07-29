@@ -35,10 +35,7 @@ Chip8::Chip8(std::string someRom)
 	this->stack.fill(0x00);
 
 	//copy default fontset
-	for(size_t i = 0; i < font.size(); i++)
-	{
-		memory[i] = font[i];
-	}
+	std::copy(font.begin(),font.end(),memory.begin());
 
 	if(!this->loadRom())
 	{
@@ -60,8 +57,6 @@ bool Chip8::loadRom() const
 
 			return true;
 		}
-
-
 	}
 
 	return false;
@@ -86,5 +81,65 @@ void Chip8::fetch()
 
 void Chip8::decode()
 {
-	
+	switch((this->opcode >> 12) & 0x0F)
+	{
+		case 0x00:
+
+			if(this->opcode == 0x00E0)
+			{
+				this->clearScreen();
+			}
+			else
+			{
+				this->programCounter = this->stack[this->stackPointer];
+
+				this->stackPointer--;	
+			}
+
+			break;
+		case 0x01:
+
+			this->programCounter = this->opcode & 0x0FFF;
+
+			break;
+		case 0x02:
+
+			this->stack[this->stackPointer++] = this->programCounter;
+			
+			this->programCounter = this->opcode & 0x0FFF;
+
+			break;
+		case 0x03:
+			break;
+		case 0x04:
+			break;
+		case 0x05:
+			break;
+		case 0x06:
+			break;
+		case 0x07:
+			break;
+		case 0x08:
+			break;
+		case 0x09:
+			break;
+		case 0x0A:
+			break;
+		case 0x0B:
+			break;
+		case 0x0C:
+			break;
+		case 0x0D:
+			break;
+		case 0x0E:
+			break;
+		case 0x0F:
+			break;
+	}
+}
+
+void Chip8::clearScreen()
+{
+	//write 0 to display memory
+	this->displayMemory.fill(0);
 }
