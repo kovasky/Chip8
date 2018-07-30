@@ -12,9 +12,9 @@ using Register16 = uint16_t; //used to represent a 16-bit register
 class Chip8
 {
 public:
-	Chip8(std::string someRom);
+	Chip8(std::string someRom); //constructor that will initialize variables
 
-	void run();
+	void run(); //will fetch decode and execute the program
 
 private:
 
@@ -26,7 +26,24 @@ private:
 	
 	void execute();
 
-	void clearScreen();
+	struct Instruction
+	{
+		Register8 firstNibble = 0x00; //first nibble of the opcode to check what will be executed
+
+		Register8 lastNibble = 0x00;
+
+		Register16 address = 0x00; //address jump to 
+		
+		Register8 Vx = 0x00; //register used for operation
+
+		Register8 Vy = 0x00; 
+
+		Register8 kk = 0x00; //lowest 8 bits of the instruction
+
+		bool performJump = false; //will this make a jump?
+	};
+
+	Instruction instruction;
 
 	std::string romLocation;
 

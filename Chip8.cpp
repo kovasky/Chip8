@@ -64,7 +64,7 @@ bool Chip8::loadRom() const
 
 void Chip8::run()
 {
-	while(1)
+	while(true)
 	{
 		this->fetch();
 
@@ -81,40 +81,92 @@ void Chip8::fetch()
 
 void Chip8::decode()
 {
-	switch((this->opcode >> 12) & 0x0F)
+	this->instruction.firstNibble = (this->opcode >> 0x12) & 0x0F;
+
+	this->instruction.lastNibble = this->opcode & 0x0F;
+
+	this->instruction.address = this->opcode & 0x0FFF;
+
+	this->instruction.Vx = (this->opcode >> 0x08) & 0x0F;
+
+	this->instruction.Vy = (this->opcode >> 0x04) & 0x0F;
+
+	this->instruction.kk = this->opcode & 0x00FF;
+
+	if(this->instruction.firstNibble == 0x01 || this->instruction.firstNibble == 0x02 || this->instruction.firstNibble == 0x0B)
+	{
+		this->instruction.performJump = true;
+	}
+}
+
+void Chip8::execute()
+{
+	switch(this->instruction.firstNibble)
 	{
 		case 0x00:
 
-			if(this->opcode == 0x00E0)
+			if(this->instruction.kk == 0x00E0)
 			{
-				this->clearScreen();
+				//clear the screen
+				this->displayMemory.fill(0x00);
 			}
 			else
 			{
+				//perform a return from subroutine
 				this->programCounter = this->stack[this->stackPointer];
 
 				this->stackPointer--;	
 			}
 
 			break;
+
 		case 0x01:
 
-			this->programCounter = this->opcode & 0x0FFF;
+			//perform a jump to specified address
+			this->programCounter = this->instruction.address;
 
 			break;
+
 		case 0x02:
 
+			//increment stack pointer and save current program counter
 			this->stack[this->stackPointer++] = this->programCounter;
 			
-			this->programCounter = this->opcode & 0x0FFF;
+			//set program counter to specified address
+			this->programCounter = this->instruction.address;
 
 			break;
+
 		case 0x03:
+
+			//skip next instruction if
+			if(this->generalPurposeRegisters[this->instruction.Vx] == this->instruction.kk)
+			{
+				this->programCounter += 0x02;
+			}
+
 			break;
+
 		case 0x04:
+
+			//skip next instruction if not
+			if(this->instruction.Vx != this->instruction.kk)
+			{
+				this->programCounter += 0x02;
+			}
+
 			break;
+
 		case 0x05:
+
+			//skip next instruction if
+			if(this->instruction.Vx == this->instruction.Vy)
+			{
+				this->programCounter += 0x02;
+			}
+
 			break;
+
 		case 0x06:
 			break;
 		case 0x07:
@@ -136,10 +188,4 @@ void Chip8::decode()
 		case 0x0F:
 			break;
 	}
-}
-
-void Chip8::clearScreen()
-{
-	//write 0 to display memory
-	this->displayMemory.fill(0);
 }
