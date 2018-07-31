@@ -51,8 +51,6 @@ private:
 
 	Register8 soundTimer;
 
-	Register8 flag; 
-
 	Register16 opcode; //the opcode is 16 bits long and is used for the instructions
 
 	Register16 index;

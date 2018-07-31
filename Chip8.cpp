@@ -22,7 +22,7 @@ const std::array<Register8,0x50> font =
 };
 
 Chip8::Chip8(std::string someRom)
-	:romLocation(someRom),delayTimer(0x00),soundTimer(0x00),flag(0x00), opcode(0x00), index(0x00), stackPointer(0x00), operand(0x00),programCounter(0x02)
+	:romLocation(someRom),delayTimer(0x00),soundTimer(0x00), opcode(0x00), index(0x00), stackPointer(0x00), operand(0x00),programCounter(0x02)
 {
 	this->keyState.fill(0x00);
 
@@ -105,7 +105,7 @@ void Chip8::execute()
 	{
 		case 0x00:
 
-			if(this->instruction.kk == 0x00E0)
+			if(this->instruction.kk == 0xE0)
 			{
 				//clear the screen
 				this->displayMemory.fill(0x00);
@@ -150,7 +150,7 @@ void Chip8::execute()
 		case 0x04:
 
 			//skip next instruction if not
-			if(this->instruction.Vx != this->instruction.kk)
+			if(this->generalPurposeRegisters[this->instruction.Vx] != this->instruction.kk)
 			{
 				this->programCounter += 0x02;
 			}
@@ -160,7 +160,7 @@ void Chip8::execute()
 		case 0x05:
 
 			//skip next instruction if
-			if(this->instruction.Vx == this->instruction.Vy)
+			if(this->generalPurposeRegisters[this->instruction.Vx] == this->generalPurposeRegisters[this->instruction.Vy])
 			{
 				this->programCounter += 0x02;
 			}
@@ -168,11 +168,104 @@ void Chip8::execute()
 			break;
 
 		case 0x06:
+
+			//put kk into Vx
+			this->generalPurposeRegisters[this->instruction.Vx] = this->instruction.kk;
+
 			break;
+
 		case 0x07:
+
+			//set Vx = Vx + kk
+			this->generalPurposeRegisters[this->instruction.Vx] += this->instruction.kk;
+
 			break;
+
 		case 0x08:
+
+			switch(this->instruction.lastNibble)
+			{
+				case 0x00:
+
+					//store the value of Vy into Vx
+					this->generalPurposeRegisters[this->instruction.Vx] = this->generalPurposeRegisters[this->instruction.Vy];
+					break;
+
+				case 0x01:
+
+					//perform OR between Vx and Vy and store into Vx
+					this->generalPurposeRegisters[this->instruction.Vx] |= this->generalPurposeRegisters[this->instruction.Vy];
+
+					break;
+
+				case 0x02:
+
+					//perform AND with Vx and Vy and store into Vx
+					this->generalPurposeRegisters[this->instruction.Vx] &= this->generalPurposeRegisters[this->instruction.Vy];
+
+					break;
+
+				case 0x03:
+
+					//perform XOR with Vx and Vy and store into Vx
+					this->generalPurposeRegisters[this->instruction.Vx] ^= this->generalPurposeRegisters[this->instruction.Vy];
+
+					break;
+
+				case 0x04:
+
+					//perform ADD with Vx and Vy and store into Vx; also checks for overflow
+					this->generalPurposeRegisters[this->instruction.Vx] += this->generalPurposeRegisters[this->instruction.Vy];
+
+					//if there is an overflow, set the overflow flag to 1
+					this->generalPurposeRegisters[0x0F] = (this->generalPurposeRegisters[this->instruction.Vx] > UINT8_MAX - this->generalPurposeRegisters[this->instruction.Vy] ? 0x01 : 0x00);
+					
+					break;
+
+				case 0x05:
+
+					//perform SUB with Vx and Vy and store into Vx; also check for borrow
+					this->generalPurposeRegisters[this->instruction.Vx] -= this->generalPurposeRegisters[this->instruction.Vy];
+
+					//check if borrow
+					this->generalPurposeRegisters[0x0F] = (this->generalPurposeRegisters[this->instruction.Vx] < this->generalPurposeRegisters[this->instruction.Vy] ? 0x00 : 0x01);
+
+					break;
+
+				case 0x06:
+					
+					//store last bit into flag register
+					this->generalPurposeRegisters[0x0F] = this->generalPurposeRegisters[this->instruction.Vy] >> 0x07;
+
+					//store Vy shifted one to the right into Vx
+					this->generalPurposeRegisters[this->instruction.Vx] = this->generalPurposeRegisters[this->instruction.Vy] >> 0x01;
+
+					break;
+
+				case 0x07:
+
+					//SUB Vy - Vx and store into Vx
+					this->generalPurposeRegisters[this->instruction.Vx] = this->generalPurposeRegisters[this->instruction.Vy] - this->generalPurposeRegisters[this->instruction.Vx];
+
+					//if Vx > Vy flag is 1 else 0 
+					this->generalPurposeRegisters[0x0F] = (this->generalPurposeRegisters[this->instruction.Vx] > this->generalPurposeRegisters[this->instruction.Vy] ? 0x01 : 0x00);
+
+					break;
+
+				case 0x0E:
+
+					//store most significant bit of Vx
+					this->generalPurposeRegisters[0x0F] = this->generalPurposeRegisters[this->instruction.Vx] >> 0x07;
+
+					//shift Vx to the left by 1
+					this->generalPurposeRegisters[this->instruction.Vx] <<= 0x01;
+
+					break;
+
+			}
+
 			break;
+
 		case 0x09:
 			break;
 		case 0x0A:
