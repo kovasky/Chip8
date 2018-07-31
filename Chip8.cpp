@@ -1,4 +1,5 @@
 #include <fstream>
+#include <random>
 #include "Chip8.h"
 
 const std::array<Register8,0x50> font = 
@@ -104,6 +105,7 @@ void Chip8::execute()
 	switch(this->instruction.firstNibble)
 	{
 		case 0x00:
+		{
 
 			if(this->instruction.kk == 0xE0)
 			{
@@ -119,16 +121,18 @@ void Chip8::execute()
 			}
 
 			break;
+		}
 
 		case 0x01:
-
+		{
 			//perform a jump to specified address
 			this->programCounter = this->instruction.address;
 
 			break;
+		}
 
 		case 0x02:
-
+		{
 			//increment stack pointer and save current program counter
 			this->stack[this->stackPointer++] = this->programCounter;
 			
@@ -136,9 +140,10 @@ void Chip8::execute()
 			this->programCounter = this->instruction.address;
 
 			break;
+		}
 
 		case 0x03:
-
+		{
 			//skip next instruction if
 			if(this->generalPurposeRegisters[this->instruction.Vx] == this->instruction.kk)
 			{
@@ -146,9 +151,10 @@ void Chip8::execute()
 			}
 
 			break;
+		}
 
 		case 0x04:
-
+		{
 			//skip next instruction if not
 			if(this->generalPurposeRegisters[this->instruction.Vx] != this->instruction.kk)
 			{
@@ -156,9 +162,10 @@ void Chip8::execute()
 			}
 
 			break;
+		}
 
 		case 0x05:
-
+		{
 			//skip next instruction if
 			if(this->generalPurposeRegisters[this->instruction.Vx] == this->generalPurposeRegisters[this->instruction.Vy])
 			{
@@ -166,23 +173,26 @@ void Chip8::execute()
 			}
 
 			break;
+		}
 
 		case 0x06:
-
+		{
 			//put kk into Vx
 			this->generalPurposeRegisters[this->instruction.Vx] = this->instruction.kk;
 
 			break;
+		}
 
 		case 0x07:
-
+		{
 			//set Vx = Vx + kk
 			this->generalPurposeRegisters[this->instruction.Vx] += this->instruction.kk;
 
 			break;
+		}
 
 		case 0x08:
-
+		{
 			switch(this->instruction.lastNibble)
 			{
 				case 0x00:
@@ -265,20 +275,58 @@ void Chip8::execute()
 			}
 
 			break;
+		}
 
 		case 0x09:
+		{
+			//skip next instruction if Vx is not equal to Vy
+			if(this->generalPurposeRegisters[this->instruction.Vx] != this->generalPurposeRegisters[this->instruction.Vy])
+			{
+				this->programCounter += 0x02;
+			}
+
 			break;
+		}
+
 		case 0x0A:
+		{
+			//set Index register to the address provided
+			this->index = this->instruction.address;
+
 			break;
+		}
+
 		case 0x0B:
+		{
+			//jump to address + V0
+			this->programCounter = this->instruction.address + this->generalPurposeRegisters[0x00];
+
 			break;
+		}
+
 		case 0x0C:
+		{
+			//generate a random number and store it into Vx
+			std::random_device rand;
+			std::mt19937 random(rand());
+			std::uniform_int_distribution<int> rint(0,255);
+
+			this->generalPurposeRegisters[this->instruction.Vx] = (unsigned char)rint(random);
+
 			break;
+		}
+
 		case 0x0D:
+		{
 			break;
+		}
 		case 0x0E:
+		{	
 			break;
+		}
 		case 0x0F:
+		{
 			break;
+		}
 	}
 }
