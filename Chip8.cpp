@@ -309,24 +309,119 @@ void Chip8::execute()
 			//generate a random number and store it into Vx
 			std::random_device rand;
 			std::mt19937 random(rand());
-			std::uniform_int_distribution<int> rint(0,255);
+			std::uniform_int_distribution<Register8> rint(0,255);
 
-			this->generalPurposeRegisters[this->instruction.Vx] = (unsigned char)rint(random);
+			this->generalPurposeRegisters[this->instruction.Vx] = rint(random);
 
 			break;
 		}
 
+		/* draw sprite on screen
+		 * 
+		 * height = n = last nibble
+		 *
+		 *
+		 *
+		 * */
 		case 0x0D:
 		{
+
 			break;
 		}
 		case 0x0E:
 		{	
+			if(this->instruction.lastNibble == 0x0E)
+			{
+				if(keyState[this->instruction.Vx])
+				{
+					this->programCounter += 0x02;
+				}	
+			}
+			else
+			{
+				if(!this->keyState[this->instruction.Vx])
+				{
+					this->programCounter += 0x02;
+				}
+			}
+
 			break;
 		}
 		case 0x0F:
 		{
+			switch(this->instruction.kk)
+			{
+				case 0x07:
+
+					this->generalPurposeRegisters[this->instruction.Vx] = this->delayTimer;
+
+					break;
+
+				case 0x0A:
+
+					//wait for kepress and store in register
+
+					break;
+
+				case 0x15:
+
+					this->delayTimer = this->generalPurposeRegisters[this->instruction.Vx];
+
+					break;
+
+				case 0x18:
+
+					this->soundTimer = this->generalPurposeRegisters[this->instruction.Vx];
+
+					break;
+
+				case 0x1E:
+
+					this->index += this->generalPurposeRegisters[this->instruction.Vx];
+
+					break;
+
+				case 0x29:
+
+
+
+					break;
+
+				case 0x33:
+
+					this->memory[this->index] = this->generalPurposeRegisters[this->instruction.Vx] / 100;
+
+					this->memory[this->index + 1] = (this->generalPurposeRegisters[this->instruction.Vx] % 100) / 10;
+
+					this->memory[this->index + 2] = this->generalPurposeRegisters[this->instruction.Vx] % 10;
+
+					break;
+				case 0x55:
+
+					for(std::size_t i = 0; i < this->generalPurposeRegisters.size(); i++)
+					{
+						this->memory[this->index + i] = this->generalPurposeRegisters[i];
+					}
+
+					break;
+				case 0x65:
+
+					for(std::size_t i = 0; i < this->generalPurposeRegisters.size(); i++)
+					{
+						this->generalPurposeRegisters[i] = this->memory[this->index + i];
+					}
+
+					break;
+			}
+
 			break;
 		}
 	}
+
+	if(this->delayTimer > 0)
+	{
+		this->delayTimer--;
+	}
+
+	//soundTimer
 }
