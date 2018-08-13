@@ -65,14 +65,23 @@ bool Chip8::loadRom() const
 
 void Chip8::run()
 {
-	while(true)
-	{
 		this->fetch();
 
 		this->decode();
 
 		this->execute();
-	}
+
+		//if draw flag update screen?
+}
+
+void Chip8::updateDisplay(bool someBool)
+{
+	updateDisplay_ = someBool;
+}
+
+bool Chip8::updateDisplay() const
+{
+	return updateDisplay_;
 }
 
 void Chip8::fetch()
@@ -325,7 +334,30 @@ void Chip8::execute()
 		 * */
 		case 0x0D:
 		{
+			this->generalPurposeRegisters[0x0F]= 0x00;	
 
+			uint8_t pixel = 0x00;
+
+			for(std::size_t j = 0; j < this->instruction.lastNibble; j++)
+			{
+				pixel = this->memory[this->index + j];	
+
+				for(std::size_t i = 0; i < 8; i++)
+				{
+					if((pixel & (0x80 >> i)) != 0x00)
+					{
+						if(this->displayMemory[(this->instruction.Vx + i + ((this->instruction.Vy + j) * 0x40))] == 0x01)
+						{
+							this->generalPurposeRegisters[0x0F] = 0x01;
+
+							this->displayMemory[(this->instruction.Vx + i + ((this->instruction.Vy + j) * 0x40))] ^= 0x01;
+						}
+					}
+				}
+			}
+
+			//drawflag?
+			
 			break;
 		}
 		case 0x0E:
@@ -383,8 +415,8 @@ void Chip8::execute()
 
 				case 0x29:
 
-
-
+					this->index = this->generalPurposeRegisters[this->instruction.Vx] * 0x05;
+					
 					break;
 
 				case 0x33:
@@ -418,10 +450,18 @@ void Chip8::execute()
 		}
 	}
 
-	if(this->delayTimer > 0)
+	if(this->delayTimer > 0x00)
 	{
 		this->delayTimer--;
 	}
 
-	//soundTimer
+	if(this->soundTimer > 0x00)
+	{
+		this->soundTimer--;
+	}
+
+	if(!this->instruction.performJump)
+	{
+		this->programCounter += 0x02;
+	}
 }

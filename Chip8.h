@@ -16,6 +16,10 @@ public:
 
 	void run(); //will fetch decode and execute the program
 
+	void updateDisplay(bool someBool);
+
+	bool updateDisplay() const;
+
 private:
 
 	bool loadRom() const;
@@ -25,6 +29,8 @@ private:
 	void decode();
 	
 	void execute();
+
+	bool updateDisplay_;
 
 	struct Instruction
 	{
@@ -70,5 +76,4 @@ private:
 	std::array<Register8,0x1000> memory;
 		
 	std::array<Register16,0x10> stack;
-	
 };
