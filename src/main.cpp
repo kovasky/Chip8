@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	{
 		myChip->run();
 
-		if(myChip->updateScreen())
+		if(myChip->updateDisplay())
 		{
 			drawGraphics();
 		}
