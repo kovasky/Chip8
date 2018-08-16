@@ -1,6 +1,13 @@
-/*
+/* CHIP-8 INTERPRETER
+ *
+ * MADE BY: KOVASKY BUEZO, 2018
+ *
+ * LICENSE: MIT
  *
  * */
+
+#ifndef CHIP8_H
+#define CHIP8_H
 
 #include <cstdint> //for uint8
 #include <array>
@@ -19,6 +26,8 @@ public:
 	void updateDisplay(bool someBool);
 
 	bool updateDisplay() const;
+
+	std::array<Register8,0x100> displayMem() const;
 
 private:
 
@@ -77,3 +86,5 @@ private:
 		
 	std::array<Register16,0x10> stack;
 };
+
+#endif
