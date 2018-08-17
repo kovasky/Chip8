@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_FLAGS "-Wall")
 
-add_executable(chip8 src/Chip8.cpp src/main.cpp)
+add_executable(chip8 src/Chip8.cpp src/Display.cpp src/main.cpp)
 
 INCLUDE(FindPkgConfig)
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
