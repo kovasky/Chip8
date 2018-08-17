@@ -74,13 +74,10 @@ bool Chip8::loadRom() const
 void Chip8::run()
 {
 		this->fetch();
-		std::cout << "fetch" << "\n";
 
 		this->decode();
-		std::cout << "decode" << "\n";
 
 		this->execute();
-		std::cout << "execute" << "\n";
 }
 
 //set updateDisplay flag
@@ -103,27 +100,21 @@ std::array<Register8,0x100> Chip8::displayMem() const
 //retrieve opcode
 void Chip8::fetch()
 {
-	this->opcode = this->memory[programCounter] << 8 | this->memory[programCounter + 1];
-	printf("%#010x\n", this->opcode); 
+	this->opcode = this->memory[programCounter] << 0x08 | this->memory[programCounter + 0x01];
 }
 
 //save parts of the instruction that are necessary to make execution easier
 void Chip8::decode()
 {
 	this->instruction.firstNibble = ((this->opcode >> 0x0C) & 0x0F);
-	std::cout << "first nibble = ";
-       	printf("%#010x\n", this->instruction.firstNibble);	
-	std::cout << "\n";
 
 	this->instruction.lastNibble = this->opcode & 0x0F;
 
 	this->instruction.address = this->opcode & 0x0FFF;
 
 	this->instruction.Vx = (this->opcode >> 0x08) & 0x0F;
-	std::cout << "Vx = " << this->instruction.Vx << "\n";
 
 	this->instruction.Vy = (this->opcode >> 0x04) & 0x0F;
-	std::cout << "Vy = " << this->instruction.Vy << "\n";
 
 	this->instruction.kk = this->opcode & 0x00FF;
 
@@ -355,7 +346,7 @@ void Chip8::execute()
 			//generate a random number and store it into Vx
 			std::random_device rand;
 			std::mt19937 random(rand());
-			std::uniform_int_distribution<Register8> rint(0,255);
+			std::uniform_int_distribution<Register8> rint(0x00,0xFF);
 
 			this->generalPurposeRegisters[this->instruction.Vx] = rint(random);
 
@@ -474,11 +465,11 @@ void Chip8::execute()
 				case 0x33:
 				{
 					//store BCD representation of Vx in index, index + 1, index + 2
-					this->memory[this->index] = this->generalPurposeRegisters[this->instruction.Vx] / 100;
+					this->memory[this->index] = this->generalPurposeRegisters[this->instruction.Vx] / 0x64;
 
-					this->memory[this->index + 1] = (this->generalPurposeRegisters[this->instruction.Vx] % 100) / 10;
+					this->memory[this->index + 0x01] = (this->generalPurposeRegisters[this->instruction.Vx] % 0x64) / 0x0A;
 
-					this->memory[this->index + 2] = this->generalPurposeRegisters[this->instruction.Vx] % 10;
+					this->memory[this->index + 0x02] = this->generalPurposeRegisters[this->instruction.Vx] % 0x0A;
 
 					break;
 				}
@@ -486,7 +477,7 @@ void Chip8::execute()
 				case 0x55:
 				{
 					//store the values stored in the general purpose registers
-					for(std::size_t i = 0; i < this->generalPurposeRegisters.size(); i++)
+					for(std::size_t i = 0x00; i < this->generalPurposeRegisters.size(); i++)
 					{
 						this->memory[this->index + i] = this->generalPurposeRegisters[i];
 					}
@@ -496,7 +487,7 @@ void Chip8::execute()
 				case 0x65:
 				{
 					//retrieve values stored in memory and set them to the general purpose registers
-					for(std::size_t i = 0; i < this->generalPurposeRegisters.size(); i++)
+					for(std::size_t i = 0x00; i < this->generalPurposeRegisters.size(); i++)
 					{
 						this->generalPurposeRegisters[i] = this->memory[this->index + i];
 					}
