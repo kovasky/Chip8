@@ -27,7 +27,7 @@ public:
 
 	bool updateDisplay() const;
 
-	std::array<Register8,0x100> displayMem() const;
+	std::array<std::array<Register8,0x20>,0x40> displayMem();
 
 private:
 
@@ -72,19 +72,18 @@ private:
 
 	Register16 stackPointer;
 
-	Register16 operand;
-
 	Register16 programCounter;
 
 	std::array<Register8,0x10> keyState;
 
 	std::array<Register8,0x10> generalPurposeRegisters;  //the Chip-8 has 16 General Purpose Registers
 
-	std::array<Register8,0x100> displayMemory;
+	std::array<Register8,0x10> stack;
 
 	std::array<Register8,0x1000> memory;
-		
-	std::array<Register16,0x10> stack;
+	
+	std::array<std::array<Register8,0x20>,0x40> displayMemory; //array of [64d][32d]
+	
 };
 
 #endif

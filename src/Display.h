@@ -10,30 +10,27 @@ class Chip8;
 
 class Display
 {
+	using Register8 = uint8_t;
 
 public:
 
-	Display(std::string someName, uint8_t someHeight, uint8_t someWidth);
+	Display(std::string someName);
 
 	~Display();
 
-	void drawImage(bool someBool);
+	void drawImage(std::array<std::array<Register8,0x20>,0x40> displayMem);
 
 private:
 
-	uint8_t displayHeight;
+	const Register8 displayHeight = 0x20;
 
-	uint8_t displayWidth;
+	const Register8 displayWidth = 0x40;
+
+	const Register8 pixelSize = 0x10;
 
 	SDL_Window *myWindow = nullptr;
 
-	SDL_Surface *mySurface = nullptr;
-
 	SDL_Renderer *myRenderer = nullptr;
-
-	SDL_Texture *myTexture = nullptr;
-
-	SDL_Event myEvent;
 };
 
 #endif
