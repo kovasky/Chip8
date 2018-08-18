@@ -1,15 +1,15 @@
-#include <iostream>
 #include <string>
 #include <SDL2/SDL.h> 
-#include <unistd.h>
 #include "Chip8.h"
 #include "Display.h"
 
 int main(int argv, char *args[])
 {
-	Chip8 *myChip = new Chip8("/home/kova/Google Drive/School/PROJECTS/CHIP8/src/PONG");
+	std::string romName = args[1];
 
-	Display *myDisplay = new Display("Chip8");
+	Chip8 *myChip = new Chip8("src/" + romName);
+
+	Display *myDisplay = new Display();
 
 	while(true)
 	{

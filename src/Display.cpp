@@ -3,14 +3,14 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include "Display.h"
-#include "Chip8.h"
 
-
-Display::Display(std::string someName)
+Display::Display()
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	this->myWindow = SDL_CreateWindow(someName.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, this->displayWidth  * this->pixelSize, this->displayHeight * this->pixelSize, SDL_WINDOW_SHOWN);
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
+	this->myWindow = SDL_CreateWindow("Chip8 Interpreter by Kovasky Buezo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, this->displayWidth  * this->pixelSize, this->displayHeight * this->pixelSize, SDL_WINDOW_SHOWN);
 
 	this->myRenderer = SDL_CreateRenderer(this->myWindow, -1, SDL_RENDERER_ACCELERATED);
 

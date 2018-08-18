@@ -5,16 +5,13 @@
 #include<string>
 #include <SDL2/SDL.h>
 
-//forward declaration of Chip8 cpu
-class Chip8;
-
 class Display
 {
 	using Register8 = uint8_t;
 
 public:
 
-	Display(std::string someName);
+	Display();
 
 	~Display();
 

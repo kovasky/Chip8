@@ -66,6 +66,8 @@ bool Chip8::loadRom() const
 		{
 			someRom.read((char*)((this->memory.data())+0x0200),fileSize);
 
+			someRom.close();
+
 			return true;
 		}
 	}
@@ -380,18 +382,21 @@ void Chip8::execute()
 
 			for(std::size_t j = 0; j < this->instruction.lastNibble; ++j)
 			{
+				Register8 ypos = (this->generalPurposeRegisters[this->instruction.Vy] + j) % 32;
+
 				pixel = this->memory[this->index + j];	
 
 				for(std::size_t i = 0; i < 0x08; ++i)
 				{
 					if((pixel & (0x80 >> i)) != 0x00)
 					{
-						if(this->displayMemory[this->instruction.Vx + i][this->instruction.Vy + j] ==  0x01)
+						Register8 xpos = (this->generalPurposeRegisters[this->instruction.Vx] + i) % 64;
+						if(this->displayMemory[xpos][ypos] ==  0x01)
 						{
 							this->generalPurposeRegisters[0x0F] = 0x01;
 						}
 			
-						this->displayMemory[this->instruction.Vx + i][this->instruction.Vy + j] ^= 0x01;
+						this->displayMemory[xpos][ypos] ^= 0x01;
 					}
 				}
 			}
@@ -407,7 +412,7 @@ void Chip8::execute()
 			//if Vx key is pressed, skip next instruction
 			if(this->instruction.lastNibble == 0x0E)
 			{
-				if(keyState[this->instruction.Vx])
+				if(this->keyState[this->instruction.Vx])
 				{
 					this->programCounter += 0x02;
 				}	
@@ -503,6 +508,8 @@ void Chip8::execute()
 						this->memory[this->index + i] = this->generalPurposeRegisters[i];
 					}
 
+					this->index += this->generalPurposeRegisters[this->instruction.Vx] + 1;
+
 					break;
 				}
 				case 0x65:
@@ -512,6 +519,8 @@ void Chip8::execute()
 					{
 						this->generalPurposeRegisters[i] = this->memory[this->index + i];
 					}
+
+					this->index += this->generalPurposeRegisters[this->instruction.Vx] + 1;
 
 					break;
 				}
