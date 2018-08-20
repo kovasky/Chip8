@@ -7,9 +7,9 @@
 
 class Display
 {
-	using Register8 = uint8_t;
-
 public:
+
+	using Register8 = uint8_t;
 
 	Display();
 
