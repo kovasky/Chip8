@@ -31,9 +31,9 @@ std::map<SDL_Keycode,Register8> myKeys =
 
 int main(int argv, char *args[])
 {
-	std::string romName = args[1];
+	std::string romLocation = args[1];
 
-	Chip8 *myChip = new Chip8("src/" + romName);
+	Chip8 *myChip = new Chip8(romLocation);
 
 	Display *myDisplay = new Display();
 
