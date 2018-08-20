@@ -39,6 +39,8 @@ int main(int argv, char *args[])
 
 	while(true)
 	{
+		auto start = SDL_GetTicks();
+		
 		myChip->run();
 
 		myChip->updateKeys(getKey());
@@ -46,6 +48,13 @@ int main(int argv, char *args[])
 		if(myChip->updateDisplay())
 		{
 			myDisplay->drawImage(myChip->displayMem());
+		}
+		
+		auto end = SDL_GetTicks();
+
+		if(SDL_GetTicks() - start < 2)
+		{
+			SDL_Delay(2  - (end - start));
 		}
 	}
 
