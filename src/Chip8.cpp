@@ -4,7 +4,9 @@
 #include <random>
 #include "Chip8.h"
 
-const std::array<Register8,0x50> font = 
+std::pair<Chip8::Register8, Chip8::keyTrigger> getKey();
+
+const std::array<Chip8::Register8,0x50> font = 
 { 
 	0xF0, 0x90, 0x90, 0x90, 0xF0, 
 	0x20, 0x60, 0x20, 0x20, 0x70,
@@ -27,7 +29,7 @@ const std::array<Register8,0x50> font =
 Chip8::Chip8(std::string someRom)
 	:romLocation(someRom),delayTimer(0x00),soundTimer(0x00), opcode(0x00), index(0x00), stackPointer(0x00), programCounter(0x0200)
 {
-	this->keyState.fill(0x00);
+	this->keyState.fill(false);
 
 	this->generalPurposeRegisters.fill(0x00); //reset GPRs
 
@@ -85,19 +87,36 @@ void Chip8::run()
 		this->execute();
 }
 
-//set updateDisplay flag
-void Chip8::updateDisplay(bool someBool)
+bool Chip8::updateKeys(std::pair<Register8,Chip8::keyTrigger> somePair)
 {
-	updateDisplay_ = someBool;
+	if(somePair.second == Chip8::keyTrigger::keyPress)
+	{
+		this->keyState[somePair.first] = true;
+		
+		return true;
+	}
+	else
+	{
+		this->keyState[somePair.first] = false;
+	}
+
+	return false;
 }
 
 //retrieve updateDisplay flag
-bool Chip8::updateDisplay() const
+bool Chip8::updateDisplay()
 {
-	return updateDisplay_;
+	bool temp = updateDisplay_;
+	
+	if(updateDisplay_)
+	{
+		updateDisplay_ = false;
+	}
+
+	return temp;
 }
 
-std::array<std::array<Register8,0x20>,0x40> Chip8::displayMem()
+std::array<std::array<Chip8::Register8,0x20>,0x40> Chip8::displayMem()
 {
 	return this->displayMemory;
 }
@@ -152,11 +171,17 @@ void Chip8::execute()
 			}
 			else if (this->instruction.lastNibble == 0x0E)
 			{
+
+				this->programCounter = 0x00;
 				
-				this->programCounter = this->stack[this->stackPointer];
+				this->programCounter |= this->stack[this->stackPointer] << 0x08;
+
+				this->stackPointer--;
+
+				this->programCounter |= this->stack[this->stackPointer];
 				
 				//perform a return from subroutine
-				if(this->stackPointer > 0) this->stackPointer--;
+				this->stackPointer--;
 			}
 
 			break;
@@ -172,10 +197,14 @@ void Chip8::execute()
 
 		case 0x02:
 		{
+			this->stackPointer++;
+			
 			//increment stack pointer and save current program counter
 			this->stack[this->stackPointer] = this->programCounter;
 
-			if(this->stackPointer < 0x10) this->stackPointer++;
+			this->stackPointer++;
+
+			this->stack[this->stackPointer] = this->programCounter >> 0x08;
 
 			//set program counter to specified address
 			this->programCounter = this->instruction.address;
@@ -295,7 +324,7 @@ void Chip8::execute()
 					this->generalPurposeRegisters[0x0F] = this->generalPurposeRegisters[this->instruction.Vx] & 0x01;
 
 					//store Vx shifted one to the right into Vx
-					this->generalPurposeRegisters[this->instruction.Vx] >>= 0x01;
+					this->generalPurposeRegisters[this->instruction.Vx] = this->generalPurposeRegisters[this->instruction.Vx] >> 0x01;
 
 					break;
 				}
@@ -315,7 +344,7 @@ void Chip8::execute()
 				case 0x0E:
 				{
 					//store most significant bit of Vx
-					this->generalPurposeRegisters[0x0F] = this->generalPurposeRegisters[this->instruction.Vx] >> 0x07;
+					this->generalPurposeRegisters[0x0F] = (this->generalPurposeRegisters[this->instruction.Vx] & 0x80)? 0x01 : 0x00;
 
 					//shift Vx to the left by 1
 					this->generalPurposeRegisters[this->instruction.Vx] <<= 0x01;
@@ -382,22 +411,21 @@ void Chip8::execute()
 
 			for(std::size_t j = 0; j < this->instruction.lastNibble; ++j)
 			{
-				Register8 ypos = (this->generalPurposeRegisters[this->instruction.Vy] + j) % 32;
+				Register8 ypos = (this->generalPurposeRegisters[this->instruction.Vy] + j) % 0x20;
 
 				pixel = this->memory[this->index + j];	
 
 				for(std::size_t i = 0; i < 0x08; ++i)
 				{
-					if((pixel & (0x80 >> i)) != 0x00)
+					if((pixel & (0x80 >> i)))
 					{
-						Register8 xpos = (this->generalPurposeRegisters[this->instruction.Vx] + i) % 64;
-						if(this->displayMemory[xpos][ypos] ==  0x01)
-						{
-							this->generalPurposeRegisters[0x0F] = 0x01;
-						}
-			
+						Register8 xpos = (this->generalPurposeRegisters[this->instruction.Vx] + i) % 0x40;
+
+						this->generalPurposeRegisters[0x0F] |= this->displayMemory[xpos][ypos] == 0x01? 0x01 : 0x00;
+					
 						this->displayMemory[xpos][ypos] ^= 0x01;
 					}
+					
 				}
 			}
 
@@ -410,16 +438,16 @@ void Chip8::execute()
 		case 0x0E:
 		{	
 			//if Vx key is pressed, skip next instruction
-			if(this->instruction.lastNibble == 0x0E)
+			if(this->instruction.kk == 0x9E)
 			{
-				if(this->keyState[this->instruction.Vx])
+				if(this->keyState[this->generalPurposeRegisters[this->instruction.Vx]])
 				{
 					this->programCounter += 0x02;
 				}	
 			}
-			else if(this->instruction.lastNibble == 0x01)//if Vx is not pressed skip next instruction
+			else if(this->instruction.kk == 0xA1)//if Vx is not pressed skip next instruction
 			{
-				if(!this->keyState[this->instruction.Vx])
+				if(!this->keyState[this->generalPurposeRegisters[this->instruction.Vx]])
 				{
 					this->programCounter += 0x02;
 				}
@@ -439,9 +467,12 @@ void Chip8::execute()
 
 					break;
 				}
+
 				case 0x0A:
 				{
-					//wait for kepress and store in register
+					while(!this->updateKeys(getKey())){};
+					
+					//wait for keypress and store in register
 					for(std::size_t i = 0; i < this->keyState.size(); ++i)
 					{
 						if(this->keyState[i])
@@ -472,8 +503,6 @@ void Chip8::execute()
 				case 0x1E:
 				{
 					
-					this->generalPurposeRegisters[0x0F] = this->index + this->generalPurposeRegisters[this->instruction.Vx] > 0xFFF? 0x01 : 0x00;
-
 					//add to the current index the value stored in Vx
 					this->index += this->generalPurposeRegisters[this->instruction.Vx];
 
@@ -491,9 +520,9 @@ void Chip8::execute()
 				case 0x33:
 				{
 					//store BCD representation of Vx in index, index + 1, index + 2
-					this->memory[this->index] = this->generalPurposeRegisters[this->instruction.Vx] / 0x64;
+					this->memory[this->index] = (this->generalPurposeRegisters[this->instruction.Vx] / 0x64);
 
-					this->memory[this->index + 1] = (this->generalPurposeRegisters[this->instruction.Vx] / 0x0A) % 0x0A;
+					this->memory[this->index + 1] = (this->generalPurposeRegisters[this->instruction.Vx] % 0x64) / 0x0A;
 
 					this->memory[this->index + 2] = (this->generalPurposeRegisters[this->instruction.Vx] % 0x64) % 0x0A;
 
@@ -508,7 +537,7 @@ void Chip8::execute()
 						this->memory[this->index + i] = this->generalPurposeRegisters[i];
 					}
 
-					this->index += this->generalPurposeRegisters[this->instruction.Vx] + 1;
+					this->index += this->generalPurposeRegisters[this->instruction.Vx] + 0x01;
 
 					break;
 				}
@@ -520,7 +549,7 @@ void Chip8::execute()
 						this->generalPurposeRegisters[i] = this->memory[this->index + i];
 					}
 
-					this->index += this->generalPurposeRegisters[this->instruction.Vx] + 1;
+					this->index += this->generalPurposeRegisters[this->instruction.Vx] + 0x01;
 
 					break;
 				}
