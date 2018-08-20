@@ -4,9 +4,9 @@ This is a Chip8 interpreter created using modern C++ and SDL development library
 
 ## Todo
 
-1. Keyboard input
-2. Sound
-3. Framerate control
+1. Sound
+2. Framerate control
+3. SuperChip8 compatibility
 
 ## Screenshots
 
