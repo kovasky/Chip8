@@ -9,23 +9,33 @@
 #ifndef CHIP8_H
 #define CHIP8_H
 
-#include <cstdint> //for uint8
 #include <array>
+#include <cstdint> //for uint8
 #include <string>
+#include <SDL2/SDL.h>
 
-using Register8 = uint8_t; //used to represent an 8-bit register
-using Register16 = uint16_t; //used to represent a 16-bit register
 
 class Chip8
 {
 public:
+
+	using Register8 = uint8_t; //used to represent an 8-bit register
+
+	using Register16 = uint16_t; //used to represent a 16-bit register
+
 	Chip8(std::string someRom); //constructor that will initialize variables
 
 	void run(); //will fetch decode and execute the program
 
-	void updateDisplay(bool someBool);
+	bool updateDisplay();
 
-	bool updateDisplay() const;
+	enum class keyTrigger
+	{
+		keyPress,
+		keyRelease
+	};
+
+	bool updateKeys(std::pair<Register8, Chip8::keyTrigger> somePair);
 
 	std::array<std::array<Register8,0x20>,0x40> displayMem();
 
@@ -74,7 +84,7 @@ private:
 
 	Register16 programCounter;
 
-	std::array<Register8,0x10> keyState;
+	std::array<bool,0x10> keyState;
 
 	std::array<Register8,0x10> generalPurposeRegisters;  //the Chip-8 has 16 General Purpose Registers
 
@@ -83,7 +93,6 @@ private:
 	std::array<Register8,0x1000> memory;
 	
 	std::array<std::array<Register8,0x20>,0x40> displayMemory; //array of [64d][32d]
-	
 };
 
 #endif
