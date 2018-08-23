@@ -1,3 +1,11 @@
+/* CHIP-8 INTERPRETER
+ *
+ * MADE BY: KOVASKY BUEZO, 2018
+ *
+ * LICENSE: MIT
+ *
+ * */
+
 #ifndef DISPLAY_H
 #define DISPLAY_H
 

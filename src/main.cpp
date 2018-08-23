@@ -1,9 +1,16 @@
+/* CHIP-8 INTERPRETER
+ *
+ * MADE BY: KOVASKY BUEZO, 2018
+ *
+ * LICENSE: MIT
+ *
+ * */
+
 #include <map>
 #include <string>
 #include <SDL2/SDL.h> 
 #include "Chip8.h"
 #include "Display.h"
-#include <iostream>
 
 using Register8 = uint8_t;
 

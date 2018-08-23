@@ -1,7 +1,15 @@
+/* CHIP-8 INTERPRETER
+ *
+ * MADE BY: KOVASKY BUEZO, 2018
+ *
+ * LICENSE: MIT
+ *
+ * */
+
 #include <fstream>
-#include <stdio.h>
 #include <iostream>
 #include <random>
+#include <stdio.h>
 #include "Chip8.h"
 
 std::pair<Chip8::Register8, Chip8::keyTrigger> getKey();

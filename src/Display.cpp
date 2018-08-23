@@ -1,6 +1,13 @@
+/* CHIP-8 INTERPRETER
+ *
+ * MADE BY: KOVASKY BUEZO, 2018
+ *
+ * LICENSE: MIT
+ *
+ * */
+
 #include <array>
 #include <cstdint>
-#include <string>
 #include <SDL2/SDL.h>
 #include "Display.h"
 
