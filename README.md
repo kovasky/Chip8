@@ -10,8 +10,8 @@ This is a Chip8 interpreter created using modern C++ and SDL development library
 
 ## Screenshots
 
-![alt text](/img/logo.png)
 ![alt text](/img/Chip8.gif)
+![alt text](/img/logo.png)
 
 ## References
 
