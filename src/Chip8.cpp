@@ -61,6 +61,7 @@ Chip8::Chip8(std::string someRom)
 	}
 }
 
+//load rom into memory
 bool Chip8::loadRom() const 
 {
 	std::ifstream someRom(this->romLocation.c_str(), std::ios::in | std::ios::binary);
